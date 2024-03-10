@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card {
+            width: 100px;
+            height: 150px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.5s;
+        }
+
+        .card.matched {
+            background-color: #8aff8a;
+            cursor: default;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card span {
+            visibility: hidden;
+        }
+
+        .card.flipped span {
+            visibility: visible;
+        }
+
+        #copyright {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Memory Card Game</h1>
+
+    <div id="game-board"></div>
+
+    <div id="copyright">
+        <p>&copy; 2024 Created by The Citizen. All rights reserved.</p>
+    </div>
+
+    <audio id="rightSound" src="right.mp3"></audio>
+    <audio id="wrongSound" src="wrong.mp3"></audio>
+
+    <script>
+        const symbols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        let shuffledSymbols = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+        let flippedCards = [];
+
+        function createCard(symbol, index) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.index = index;
+            card.innerHTML = `<span class="hidden">${symbol}</span>`;
+            card.addEventListener('click', () => flipCard(card));
+            return card;
+        }
+
+        function flipCard(card) {
+            if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+                card.classList.add('flipped');
+                flippedCards.push(card);
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 500);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+
+            if (card1.textContent === card2.textContent) {
+                playSound('rightSound');
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+            } else {
+                playSound('wrongSound');
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+
+            flippedCards = [];
+
+            if (document.querySelectorAll('.matched').length === symbols.length * 2) {
+                alert('Congratulations! You matched all the pairs!');
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            shuffledSymbols = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+            flippedCards = [];
+            renderGame();
+        }
+
+        function renderGame() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+
+            shuffledSymbols.forEach((symbol, index) => {
+                const card = createCard(symbol, index);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        function playSound(soundId) {
+            const sound = document.getElementById(soundId);
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        renderGame();
+    </script>
+
+</body>
+
+</html>
